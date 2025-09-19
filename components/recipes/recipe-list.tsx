@@ -19,6 +19,7 @@ interface RecipeListProps {
   itemsPerPage?: number;
   showActions?: boolean;
   onRecipeDelete?: () => void;
+  currentUserId?: string;
 }
 
 type SortOption = "newest" | "oldest" | "title-asc" | "title-desc" | "difficulty-asc" | "difficulty-desc" | "cook-time-asc" | "cook-time-desc";
@@ -51,7 +52,7 @@ const getDateValue = (date: Date | string): number => {
   return date.getTime();
 };
 
-export function RecipeList({ recipes, itemsPerPage = 12, showActions = false, onRecipeDelete }: RecipeListProps) {
+export function RecipeList({ recipes, itemsPerPage = 12, showActions = false, onRecipeDelete, currentUserId }: RecipeListProps) {
   const [filters, setFilters] = useState<Filters>({
     search: "",
     category: "all",
@@ -462,6 +463,7 @@ export function RecipeList({ recipes, itemsPerPage = 12, showActions = false, on
                 recipe={recipe} 
                 showActions={showActions}
                 onDelete={onRecipeDelete}
+                currentUserId={currentUserId}
               />
             ))}
           </div>

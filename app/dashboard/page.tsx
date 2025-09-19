@@ -2,8 +2,10 @@ import Link from "next/link";
 import { SiteHeader } from "../../components/site-header";
 import { RecipeList } from "../../components/recipes/recipe-list";
 import { getRecipes } from "../../lib/supabase/queries";
+import { getServerSession } from "../../lib/supabase/server";
 
 export default async function DashboardPage() {
+  const session = await getServerSession();
   const recipes = await getRecipes();
   
   return (
@@ -26,7 +28,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        <RecipeList recipes={recipes} />
+        <RecipeList recipes={recipes} currentUserId={session?.user?.id} />
       </main>
     </div>
   );

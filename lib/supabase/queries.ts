@@ -70,6 +70,62 @@ export async function getRecipes(): Promise<Recipe[]> {
   }
 }
 
+export async function getUserRecipes(userId: string): Promise<Recipe[]> {
+  try {
+    if (!userId) {
+      console.error("No user ID provided");
+      return [];
+    }
+
+    const supabase = await createSupabaseServerClient();
+    
+    // Fetch recipes for the specific user
+    const { data: recipesData, error: recipesError } = await supabase
+      .from("recipes")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (recipesError) {
+      console.error("Error fetching user recipes:", recipesError);
+      return [];
+    }
+
+    if (!recipesData || recipesData.length === 0) {
+      return [];
+    }
+
+    // Fetch the user's profile
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .eq("id", userId)
+      .single();
+
+    if (profileError) {
+      console.error("Error fetching user profile:", profileError);
+      // Continue without profile - just use Anonymous
+    }
+
+    return recipesData.map((recipe: any) => ({
+      id: recipe.id,
+      title: recipe.title || "Untitled Recipe",
+      description: recipe.description || "",
+      author: profileData?.full_name || "Anonymous",
+      authorId: recipe.user_id || "",
+      cookTime: recipe.cooking_time || 0, // INTEGER in minutes
+      difficulty: recipe.difficulty || null,
+      createdAt: parseDate(recipe.created_at),
+      category: recipe.category || "General",
+      ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+      instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
+    }));
+  } catch (err) {
+    console.error("Error fetching user recipes:", err);
+    return [];
+  }
+}
+
 export async function getRecipeById(id: string): Promise<Recipe | null> {
   try {
     if (!id || typeof id !== 'string') {

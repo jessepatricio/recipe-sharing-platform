@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { RecipeList } from "../../components/recipes/recipe-list";
 import { Recipe } from "../../lib/types";
-import { getRecipesClient } from "../../lib/supabase/client-queries";
+import { getUserRecipesClient } from "../../lib/supabase/client-queries";
 
 interface MyRecipesClientProps {
   recipes: Recipe[];
+  userId: string;
 }
 
-export function MyRecipesClient({ recipes: initialRecipes }: MyRecipesClientProps) {
+export function MyRecipesClient({ recipes: initialRecipes, userId }: MyRecipesClientProps) {
   const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +18,7 @@ export function MyRecipesClient({ recipes: initialRecipes }: MyRecipesClientProp
     setLoading(true);
     try {
       // Refresh the recipes list after deletion
-      const data = await getRecipesClient();
+      const data = await getUserRecipesClient(userId);
       setRecipes(data);
     } catch (error) {
       console.error("Failed to refresh recipes:", error);
@@ -31,6 +32,7 @@ export function MyRecipesClient({ recipes: initialRecipes }: MyRecipesClientProp
       recipes={recipes} 
       showActions={true}
       onRecipeDelete={handleRecipeDelete}
+      currentUserId={userId}
     />
   );
 }

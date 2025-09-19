@@ -1,6 +1,6 @@
 import { Recipe } from "../../lib/types";
 import { Button } from "./ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
 import { deleteRecipe } from "../../app/actions/recipes";
 
@@ -8,9 +8,13 @@ interface RecipeCardProps {
   recipe: Recipe;
   showActions?: boolean;
   onDelete?: () => void;
+  currentUserId?: string;
 }
 
-export function RecipeCard({ recipe, showActions = false, onDelete }: RecipeCardProps) {
+export function RecipeCard({ recipe, showActions = false, onDelete, currentUserId }: RecipeCardProps) {
+  // Check if the current user owns this recipe
+  const isOwner = currentUserId && recipe.authorId === currentUserId;
+  const canEdit = showActions && isOwner;
   const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this recipe? This action cannot be undone.")) {
       const result = await deleteRecipe(recipe.id);
@@ -21,6 +25,7 @@ export function RecipeCard({ recipe, showActions = false, onDelete }: RecipeCard
   };
   return (
     <article className="group rounded-xl border border-black/10 dark:border-white/10 overflow-hidden hover:shadow-lg transition-all duration-200 bg-background">
+      <Link href={`/recipes/${recipe.id}`} className="block">
       <div className="relative h-48 w-full overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
@@ -75,25 +80,36 @@ export function RecipeCard({ recipe, showActions = false, onDelete }: RecipeCard
             </span>
             
             {showActions && (
-              <div className="flex gap-1">
-                <Link href={`/recipes/edit/${recipe.id}`}>
-                  <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                  onClick={handleDelete}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                {canEdit ? (
+                  <>
+                    <Link href={`/recipes/edit/${recipe.id}`}>
+                      <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={handleDelete}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <Link href={`/recipes/${recipe.id}`}>
+                    <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                )}
               </div>
             )}
           </div>
         </div>
       </div>
+      </Link>
     </article>
   );
 }
