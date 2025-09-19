@@ -2,10 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { getServerSession } from "../lib/supabase/server";
 import { signOut } from "../app/actions/auth";
+import { getUserProfile } from "../lib/supabase/profile-queries";
 
 export async function SiteHeader() {
   const session = await getServerSession();
   const user = session?.user ?? null;
+  
+  // Fetch user profile to get full name
+  let userProfile = null;
+  if (user?.id) {
+    userProfile = await getUserProfile(user.id);
+  }
   return (
     <header className="border-b border-black/10 dark:border-white/10">
       <div className="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
@@ -26,7 +33,11 @@ export async function SiteHeader() {
           <div className="hidden sm:flex items-center gap-6">
             {user ? (
               <>
+                <span className="text-sm text-muted-foreground">
+                  Welcome, {userProfile?.full_name || userProfile?.username || user.email}
+                </span>
                 <Link href="/dashboard" className="hover:underline underline-offset-4">Dashboard</Link>
+                <Link href="/my-recipes" className="hover:underline underline-offset-4">My Recipes</Link>
                 <Link href="/profile" className="hover:underline underline-offset-4">Profile</Link>
                 <form action={signOut}>
                   <button className="rounded-md border border-black/10 dark:border-white/15 px-3 py-1.5 hover:bg-foreground/5">
@@ -46,14 +57,20 @@ export async function SiteHeader() {
           {/* Mobile menu */}
           <div className="sm:hidden">
             {user ? (
-              <div className="flex items-center gap-3">
-                <Link href="/dashboard" className="text-sm hover:underline underline-offset-4">Dashboard</Link>
-                <Link href="/profile" className="text-sm hover:underline underline-offset-4">Profile</Link>
-                <form action={signOut}>
-                  <button className="text-sm rounded-md border border-black/10 dark:border-white/15 px-2 py-1 hover:bg-foreground/5">
-                    Sign out
-                  </button>
-                </form>
+              <div className="flex flex-col items-end gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {userProfile?.full_name || userProfile?.username || user.email}
+                </span>
+                <div className="flex items-center gap-3">
+                  <Link href="/dashboard" className="text-sm hover:underline underline-offset-4">Dashboard</Link>
+                  <Link href="/my-recipes" className="text-sm hover:underline underline-offset-4">My Recipes</Link>
+                  <Link href="/profile" className="text-sm hover:underline underline-offset-4">Profile</Link>
+                  <form action={signOut}>
+                    <button className="text-sm rounded-md border border-black/10 dark:border-white/15 px-2 py-1 hover:bg-foreground/5">
+                      Sign out
+                    </button>
+                  </form>
+                </div>
               </div>
             ) : (
               <Link href="/sign-in" className="rounded-md bg-foreground text-background px-3 py-1.5 text-sm">Sign in</Link>

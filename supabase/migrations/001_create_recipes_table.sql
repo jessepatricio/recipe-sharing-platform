@@ -12,10 +12,9 @@ CREATE TABLE IF NOT EXISTS recipes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT,
-  cook_time TEXT,
-  difficulty TEXT CHECK (difficulty IN ('Easy', 'Medium', 'Hard')) DEFAULT 'Easy',
+  cooking_time TEXT,
+  difficulty TEXT,
   servings INTEGER DEFAULT 1,
-  image_url TEXT,
   tags TEXT[] DEFAULT '{}',
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -25,7 +24,7 @@ CREATE TABLE IF NOT EXISTS recipes (
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS recipes_user_id_idx ON recipes(user_id);
 CREATE INDEX IF NOT EXISTS recipes_created_at_idx ON recipes(created_at DESC);
-CREATE INDEX IF NOT EXISTS recipes_difficulty_idx ON recipes(difficulty);
+
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;

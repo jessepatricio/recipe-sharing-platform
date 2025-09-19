@@ -9,11 +9,19 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-slot": "^1.0.2",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.57.3",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "dotenv": "^17.2.2",
+    "lucide-react": "^0.468.0",
     "next": "15.5.2",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "tailwind-merge": "^2.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
