@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Recipe } from "@/lib/types";
 import { RecipeCard } from "./recipe-card";
 import { SearchInput } from "./ui/search";
@@ -77,6 +77,12 @@ export function RecipeList({ recipes, itemsPerPage = 12, showActions = false, on
     const uniqueCategories = Array.from(new Set(recipes.map(recipe => recipe.category)));
     return uniqueCategories.sort();
   }, [recipes]);
+
+  // Reset to first page when filters change
+  const handleFilterChange = useCallback((newFilters: Partial<Filters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+    setCurrentPage(1);
+  }, []);
 
   // Update search filter when debounced search changes
   useMemo(() => {
@@ -155,12 +161,6 @@ export function RecipeList({ recipes, itemsPerPage = 12, showActions = false, on
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedRecipes = filteredAndSortedRecipes.slice(startIndex, endIndex);
-
-  // Reset to first page when filters change
-  const handleFilterChange = (newFilters: Partial<Filters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-    setCurrentPage(1);
-  };
 
   const clearFilters = () => {
     setFilters({
