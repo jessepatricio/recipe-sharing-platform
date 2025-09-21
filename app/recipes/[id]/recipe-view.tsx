@@ -4,7 +4,9 @@ import { Recipe } from "../../../lib/types";
 import { Button } from "../../../components/recipes/ui/button";
 import { Card } from "../../../components/recipes/ui/card";
 import { Badge } from "../../../components/recipes/ui/badge";
-import { Edit, Clock, ChefHat, User, Calendar, ArrowLeft } from "lucide-react";
+import { LikeButton } from "../../../components/recipes/ui/like-button";
+import { CommentsSection } from "../../../components/recipes/ui/comments-section";
+import { Edit, Clock, ChefHat, User, Calendar, ArrowLeft, MessageCircle, Heart } from "lucide-react";
 import Link from "next/link";
 
 interface RecipeViewProps {
@@ -68,13 +70,37 @@ export function RecipeView({ recipe, currentUserId }: RecipeViewProps) {
               <span>{recipe.difficulty}</span>
             </div>
           )}
+          <div className="flex items-center gap-1">
+            <Heart className="h-4 w-4" />
+            <span>{recipe.likeCount || 0} likes</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <MessageCircle className="h-4 w-4" />
+            <span>{recipe.commentCount || 0} comments</span>
+          </div>
         </div>
 
-        {/* Category Badge */}
-        <div>
-          <Badge variant="secondary" className="text-sm">
+        {/* Category Badge and Social Actions */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <Badge variant="secondary" className="text-sm w-fit">
             {recipe.category}
           </Badge>
+          
+          {/* Social Actions */}
+          <div className="flex items-center gap-3">
+            <LikeButton
+              recipeId={recipe.id}
+              initialLikeCount={recipe.likeCount || 0}
+              initialIsLiked={recipe.isLiked || false}
+              size="md"
+            />
+            <Link href="#comments">
+              <Button variant="outline" className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4" />
+                {recipe.commentCount || 0} Comments
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -144,6 +170,11 @@ export function RecipeView({ recipe, currentUserId }: RecipeViewProps) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Comments Section */}
+      <div id="comments" className="pt-8">
+        <CommentsSection recipeId={recipe.id} />
       </div>
     </div>
   );

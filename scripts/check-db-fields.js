@@ -2,6 +2,7 @@
 // Run this with: node scripts/check-db-fields.js
 
 const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config({ path: '.env.local' });
 
 // You'll need to replace these with your actual Supabase credentials
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

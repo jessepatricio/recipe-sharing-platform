@@ -12,7 +12,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
   const { id } = await params;
   const session = await getServerSession();
   
-  const recipe = await getRecipeById(id);
+  const recipe = await getRecipeById(id, session?.user?.id);
   
   if (!recipe) {
     notFound();

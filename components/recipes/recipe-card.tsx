@@ -1,8 +1,9 @@
 import { Recipe } from "../../lib/types";
 import { Button } from "./ui/button";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Eye, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { deleteRecipe } from "../../app/actions/recipes";
+import { LikeButton } from "./ui/like-button";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -62,6 +63,10 @@ export function RecipeCard({ recipe, showActions = false, onDelete, currentUserI
             </svg>
             {recipe.cookTime} min
           </span>
+          <span className="flex items-center gap-1">
+            <MessageCircle className="w-3 h-3" />
+            {recipe.commentCount || 0} comments
+          </span>
         </div>
         
         <div className="flex items-center justify-between">
@@ -107,6 +112,29 @@ export function RecipeCard({ recipe, showActions = false, onDelete, currentUserI
               </div>
             )}
           </div>
+        </div>
+        
+        {/* Social actions */}
+        <div className="flex items-center justify-between pt-3 border-t border-foreground/10" onClick={(e) => e.stopPropagation()}>
+          <LikeButton
+            recipeId={recipe.id}
+            initialLikeCount={recipe.likeCount || 0}
+            initialIsLiked={recipe.isLiked || false}
+            size="sm"
+          />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = `/recipes/${recipe.id}#comments`;
+            }}
+          >
+            <MessageCircle className="w-3 h-3 mr-1" />
+            {recipe.commentCount || 0}
+          </Button>
         </div>
       </div>
       </Link>

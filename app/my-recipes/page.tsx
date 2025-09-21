@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SiteHeader } from "../../components/site-header";
 import { RecipeList } from "../../components/recipes/recipe-list";
-import { getUserRecipes } from "../../lib/supabase/queries";
+import { getUserRecipesWithLikeStatus } from "../../lib/supabase/queries";
 import { getServerSession } from "../../lib/supabase/server";
 import { MyRecipesClient } from "./my-recipes-client";
 import { redirect } from "next/navigation";
@@ -13,7 +13,7 @@ export default async function MyRecipesPage() {
     redirect("/sign-in");
   }
 
-  const recipes = await getUserRecipes(session.user.id);
+  const recipes = await getUserRecipesWithLikeStatus(session.user.id);
 
   return (
     <div className="min-h-screen bg-background text-foreground">

@@ -11,6 +11,9 @@ export interface RecipeCore {
   category: string;
   ingredients: string[]; // TEXT[] array
   instructions: string[]; // TEXT[] array
+  likeCount: number; // Maps to like_count
+  commentCount: number; // Maps to comment_count
+  isLiked?: boolean; // Whether current user has liked this recipe
 }
 
 // Create Recipe Data interface matching the ERD schema

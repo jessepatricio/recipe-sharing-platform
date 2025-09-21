@@ -16,4 +16,5 @@ export function createSupabaseBrowserClient() {
   return createBrowserClient(supabaseUrl, supabaseAnonKey);
 }
 
-
+// Alias for compatibility
+export const createClient = createSupabaseBrowserClient;

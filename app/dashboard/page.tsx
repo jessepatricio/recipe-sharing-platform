@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { SiteHeader } from "../../components/site-header";
 import { RecipeList } from "../../components/recipes/recipe-list";
-import { getRecipes } from "../../lib/supabase/queries";
+import { getRecipesWithLikeStatus } from "../../lib/supabase/queries";
 import { getServerSession } from "../../lib/supabase/server";
 
 export default async function DashboardPage() {
   const session = await getServerSession();
-  const recipes = await getRecipes();
+  const recipes = await getRecipesWithLikeStatus(session?.user?.id);
   
   return (
     <div className="min-h-screen bg-background text-foreground">
