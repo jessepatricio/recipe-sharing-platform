@@ -15,22 +15,21 @@ export async function SiteHeader() {
   }
   return (
     <header className="border-b border-black/10 dark:border-white/10">
-      <div className="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded bg-primary/10 flex items-center justify-center">
+      <div className="mx-auto max-w-6xl px-4 flex items-center justify-between" style={{ paddingTop: '10px', paddingBottom: '10px' }}>
+        <div className="flex items-center gap-2">
+          <div className="h-28 w-28 rounded bg-primary/10 flex items-center justify-center">
             <Image
-              className="dark:invert"
-              src="/next.svg"
-              alt="Logo"
-              width={24}
-              height={24}
+              src="/jdp-logo.svg"
+              alt="Recipe Sharing Platform Logo"
+              width={111}
+              height={111}
               priority
             />
           </div>
-          <span className="text-base font-semibold tracking-tight">Recipe Sharing Platform</span>
+          <span className="text-lg font-semibold tracking-tight">Recipe Sharing Platform</span>
         </div>
-        <nav className="flex items-center gap-6 text-sm">
-          <div className="hidden sm:flex items-center gap-6">
+        <nav className="flex items-center gap-4 text-sm">
+          <div className="hidden sm:flex items-center gap-4">
             {user ? (
               <>
                 <span className="text-sm text-muted-foreground">
@@ -57,11 +56,11 @@ export async function SiteHeader() {
           {/* Mobile menu */}
           <div className="sm:hidden">
             {user ? (
-              <div className="flex flex-col items-end gap-2">
+              <div className="flex flex-col items-end gap-1">
                 <span className="text-xs text-muted-foreground">
                   {userProfile?.full_name || userProfile?.username || user.email}
                 </span>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <Link href="/dashboard" className="text-sm hover:underline underline-offset-4">Dashboard</Link>
                   <Link href="/my-recipes" className="text-sm hover:underline underline-offset-4">My Recipes</Link>
                   <Link href="/profile" className="text-sm hover:underline underline-offset-4">Profile</Link>

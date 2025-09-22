@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="jGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="dGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ec4899;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f97316;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="pGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Shadow filter -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="4" blur="6" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="150" cy="100" r="90" fill="#ffffff" stroke="#f1f5f9" stroke-width="2" filter="url(#shadow)"/>
+  
+  <!-- Letter J -->
+  <path d="M70 60 Q70 55 75 55 L90 55 Q95 55 95 60 L95 120 Q95 140 75 140 Q55 140 55 120 L55 110 Q55 105 60 105 L65 105 Q70 105 70 110 L70 115 Q70 120 75 120 Q80 120 80 115 L80 60" 
+        fill="url(#jGradient)" filter="url(#shadow)"/>
+  
+  <!-- Letter D -->
+  <path d="M120 55 L140 55 Q165 55 165 80 L165 120 Q165 145 140 145 L120 145 Q115 145 115 140 L115 60 Q115 55 120 55 Z M130 70 L130 130 L135 130 Q150 130 150 115 L150 85 Q150 70 135 70 Z" 
+        fill="url(#dGradient)" filter="url(#shadow)"/>
+  
+  <!-- Letter P -->
+  <path d="M190 55 L210 55 Q235 55 235 75 L235 90 Q235 110 210 110 L205 110 L205 140 Q205 145 200 145 L195 145 Q190 145 190 140 L190 60 Q190 55 195 55 Z M205 70 L205 95 L210 95 Q220 95 220 85 L220 80 Q220 70 210 70 Z" 
+        fill="url(#pGradient)" filter="url(#shadow)"/>
+  
+  <!-- Decorative elements -->
+  <circle cx="60" cy="45" r="3" fill="url(#jGradient)" opacity="0.6"/>
+  <circle cx="240" cy="155" r="4" fill="url(#pGradient)" opacity="0.6"/>
+  <circle cx="70" cy="165" r="2" fill="url(#dGradient)" opacity="0.6"/>
+  
+  <!-- Subtle connecting line -->
+  <path d="M100 100 Q150 80 200 100" stroke="url(#dGradient)" stroke-width="1" fill="none" opacity="0.3"/>
+</svg>
