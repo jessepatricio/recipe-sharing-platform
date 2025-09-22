@@ -300,11 +300,23 @@ recipe-sharing-platform/
 
 ## 🚀 Deployment
 
+### Live Demo
+🌐 **Try the application live**: [https://recipe-sharing-platform-blush.vercel.app/](https://recipe-sharing-platform-blush.vercel.app/)
+
 ### Vercel (Recommended)
 1. Push your code to GitHub
 2. Connect your repository to Vercel
-3. Add environment variables in Vercel dashboard
+3. Add environment variables in Vercel dashboard:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 4. Deploy!
+
+The application is automatically deployed to Vercel with:
+- **Automatic deployments** on every push to main branch
+- **Preview deployments** for pull requests
+- **Global CDN** for fast loading worldwide
+- **HTTPS** enabled by default
+- **Custom domain** support
 
 ### Other Platforms
 - **Netlify**: Compatible with Next.js
