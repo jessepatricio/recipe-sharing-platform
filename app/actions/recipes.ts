@@ -4,11 +4,64 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getServerSession } from "../../lib/supabase/server";
 import { createSupabaseServerClient } from "../../lib/supabase/server";
+import { headers } from "next/headers";
 // import { RecipeImage } from "../../lib/types"; // Unused for now
+
+// Demo mode restrictions
+const DEMO_MODE = process.env.NODE_ENV === 'production' && process.env.VERCEL === '1';
+
+// Rate limiting for demo mode
+async function checkRateLimit(action: string) {
+  if (!DEMO_MODE) return { allowed: true };
+  
+  const headersList = await headers();
+  const clientIP = headersList.get('x-forwarded-for') || 
+                   headersList.get('x-real-ip') || 
+                   headersList.get('cf-connecting-ip') || 
+                   'unknown';
+  
+  // Simple in-memory rate limiting for demo
+  const key = `${action}-${clientIP}`;
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minute
+  const maxRequests = 2; // Very restrictive for demo
+  
+  // This is a simplified version - in production, use Redis or similar
+  if (!global.rateLimitStore) {
+    global.rateLimitStore = new Map();
+  }
+  
+  const current = global.rateLimitStore.get(key);
+  if (!current || current.resetTime < now) {
+    global.rateLimitStore.set(key, { count: 1, resetTime: now + windowMs });
+    return { allowed: true, remaining: maxRequests - 1 };
+  }
+  
+  if (current.count >= maxRequests) {
+    return { 
+      allowed: false, 
+      message: 'Demo mode: Rate limit exceeded. Please wait before creating more recipes.',
+      retryAfter: Math.ceil((current.resetTime - now) / 1000)
+    };
+  }
+  
+  current.count++;
+  return { allowed: true, remaining: maxRequests - current.count };
+}
 
 
 
 export async function createRecipe(formData: FormData) {
+  // Check rate limit for demo mode
+  const rateLimitCheck = await checkRateLimit('create-recipe');
+  if (!rateLimitCheck.allowed) {
+    return { 
+      success: false, 
+      error: rateLimitCheck.message,
+      retryAfter: rateLimitCheck.retryAfter
+    };
+  }
+
   const session = await getServerSession();
   
   if (!session?.user) {

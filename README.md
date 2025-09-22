@@ -56,12 +56,22 @@ A modern, full-stack recipe sharing application built with Next.js 15, React 19,
 - **User Interactions** - Engage with the community
 - **Social Feed** - Discover recipes from other users
 
+### 🛡️ Security & Protection
+- **Rate Limiting** - Multi-layer rate limiting to prevent abuse
+- **Demo Mode Protection** - Special restrictions for public demo
+- **Row Level Security** - Comprehensive RLS policies
+- **Input Validation** - Client and server-side validation
+- **Security Headers** - XSS, CSRF, and clickjacking protection
+- **Usage Tracking** - Monitor and prevent abuse
+- **Image Upload Security** - File type and size validation
+
 ### 🏗️ Technical Features
 - **Server-Side Rendering** - Fast initial page loads
 - **Type Safety** - Full TypeScript implementation
 - **Database Integration** - Supabase PostgreSQL
 - **Real-time Updates** - Live data synchronization
 - **Performance Optimized** - Debounced search, efficient queries
+- **Image Optimization** - Next.js Image component with automatic optimization
 
 ## 🚀 Getting Started
 
@@ -233,12 +243,17 @@ recipe-sharing-platform/
 │   ├── auth/            # Authentication components
 │   ├── profile/         # Profile components
 │   ├── recipes/         # Recipe components
+│   ├── demo-warning.tsx # Demo mode warnings
 │   └── site-header.tsx  # Navigation
 ├── lib/                 # Utilities and configurations
 │   ├── supabase/        # Database queries
+│   ├── rate-limit.ts    # Rate limiting utilities
 │   ├── types.ts         # TypeScript types
 │   └── utils.ts         # Helper functions
+├── docs/                # Documentation
+│   └── security-measures.md # Security documentation
 ├── supabase/            # Database migrations and seeds
+│   └── migrations/      # Database schema migrations
 └── public/              # Static assets
 ```
 
@@ -279,24 +294,34 @@ recipe-sharing-platform/
 
 ## 🆕 Recent Updates
 
-### Image Upload System
+### 🛡️ Security & Protection System
+- **Multi-layer Rate Limiting**: Client, server, and database-level protection
+- **Demo Mode Protection**: Special restrictions for public demo deployment
+- **Enhanced RLS Policies**: Comprehensive database security
+- **Usage Tracking**: Monitor and prevent abuse patterns
+- **Security Headers**: XSS, CSRF, and clickjacking protection
+- **Demo Warning System**: Clear notifications about limitations
+
+### 🖼️ Image Upload System
 - **Drag & Drop Interface**: Easy image upload with visual feedback
 - **Multiple Images**: Upload up to 5 images per recipe
 - **Image Galleries**: Beautiful display on all recipe pages
 - **Primary Image**: Automatic primary image selection
 - **Storage Integration**: Secure Supabase Storage with RLS policies
+- **Image Optimization**: Next.js Image component with automatic optimization
 
-### Social Features
+### 👥 Social Features
 - **Like System**: Like and unlike recipes with real-time counters
 - **Comments**: Leave and view comments on recipes
 - **User Engagement**: Interactive social features
 - **Real-time Updates**: Live like and comment counts
 
-### UI/UX Improvements
+### 🎨 UI/UX Improvements
 - **Cancel Button**: Easy recipe editing with cancel functionality
 - **Smart Navigation**: Redirect to My Recipes after saving/updating
 - **Image Display**: Stunning image galleries across all pages
 - **Better Error Handling**: Improved error messages and validation
+- **Demo Warning Banner**: Clear notifications about demo limitations
 
 ## 🚀 Deployment
 
@@ -322,6 +347,83 @@ The application is automatically deployed to Vercel with:
 - **Netlify**: Compatible with Next.js
 - **Railway**: Full-stack deployment
 - **DigitalOcean**: Custom server setup
+
+## 🛡️ Security & Demo Protection
+
+This application includes comprehensive security measures to protect against abuse, especially important for public demo deployments.
+
+### 🔒 **Rate Limiting**
+- **Recipe Creation**: 2 recipes per minute per IP
+- **Recipe Updates**: 3 updates per 30 seconds per IP
+- **Image Uploads**: 1 upload per minute per IP
+- **Likes**: 5 likes per 10 seconds per IP
+- **Comments**: 3 comments per 30 seconds per IP
+
+### 🚨 **Demo Mode Restrictions**
+- **Automatic Detection**: Demo users are automatically identified
+- **Usage Tracking**: All demo user actions are monitored
+- **Resource Limits**: Strict limits on database operations
+- **Warning System**: Clear notifications about demo limitations
+
+### 🔐 **Database Security**
+- **Row Level Security (RLS)**: All tables protected with comprehensive policies
+- **User Isolation**: Users can only access their own data
+- **Demo User Policies**: Special restrictions for demo accounts
+- **Usage Monitoring**: Track and prevent abuse patterns
+
+### 🛡️ **Application Security**
+- **Security Headers**: XSS, CSRF, and clickjacking protection
+- **Input Validation**: Client and server-side validation
+- **File Upload Security**: Type and size validation
+- **Authentication**: Secure Supabase Auth integration
+
+### 📊 **Monitoring & Abuse Prevention**
+- **Real-time Tracking**: Monitor usage patterns
+- **IP-based Limiting**: Prevent abuse from single sources
+- **Automatic Cleanup**: Remove old usage data
+- **Alert System**: Notify of potential abuse
+
+### 🔧 **Security Configuration**
+
+For production deployment, ensure these environment variables are set:
+
+```env
+# Demo Mode Configuration
+DEMO_MODE=true
+DEMO_RATE_LIMIT_ENABLED=true
+
+# Security Headers
+NEXT_PUBLIC_APP_URL=https://your-domain.vercel.app
+```
+
+### 📋 **Security Features in Detail**
+
+| Feature | Protection Level | Description |
+|---------|------------------|-------------|
+| Rate Limiting | High | Multi-layer rate limiting (client, server, database) |
+| RLS Policies | Very High | Comprehensive row-level security |
+| Input Validation | High | Client and server-side validation |
+| File Upload | Very High | Type, size, and content validation |
+| Demo Restrictions | Very High | Special limits for demo users |
+| Usage Tracking | Medium | Monitor and prevent abuse |
+
+### 🚨 **Demo Mode Warning**
+
+The public demo includes:
+- ⚠️ **Rate limiting** to prevent abuse
+- ⚠️ **Data may be reset** periodically
+- ⚠️ **Limited features** compared to full deployment
+- ⚠️ **Usage monitoring** for security
+
+For full features and no restrictions, please set up your own instance following the installation guide.
+
+### 📚 **Security Documentation**
+
+For detailed security information, see:
+- **[Security Measures Guide](docs/security-measures.md)** - Comprehensive security documentation
+- **Rate Limiting Implementation** - Multi-layer protection system
+- **RLS Policies** - Database security policies
+- **Demo Mode Configuration** - Public demo protection
 
 ## 🤝 Contributing
 
