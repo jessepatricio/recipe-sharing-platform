@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MessageCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/recipes/ui/button';
 import { Card } from '@/components/recipes/ui/card';
@@ -24,7 +24,7 @@ export function CommentsSection({
   const [isLoading, setIsLoading] = useState(false);
   const [showCommentForm, setShowCommentForm] = useState(false);
 
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     setIsLoading(true);
     try {
       const fetchedComments = await getRecipeCommentsAction(recipeId);
@@ -34,7 +34,7 @@ export function CommentsSection({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [recipeId]);
 
   const handleCommentAdded = () => {
     loadComments();
@@ -62,7 +62,7 @@ export function CommentsSection({
     if (initialComments.length === 0) {
       loadComments();
     }
-  }, [recipeId]);
+  }, [recipeId, initialComments.length, loadComments]);
 
   return (
     <div className={className}>

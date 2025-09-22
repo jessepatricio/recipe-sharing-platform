@@ -13,7 +13,6 @@ export function rateLimit(config: RateLimitConfig) {
   return (req: NextRequest) => {
     const key = config.keyGenerator ? config.keyGenerator(req) : getClientIP(req);
     const now = Date.now();
-    const windowStart = now - config.windowMs;
     
     const current = rateLimitStore.get(key);
     

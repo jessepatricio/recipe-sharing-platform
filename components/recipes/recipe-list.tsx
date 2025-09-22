@@ -89,7 +89,7 @@ export function RecipeList({ recipes, itemsPerPage = 12, showActions = false, on
     if (debouncedSearch !== filters.search) {
       handleFilterChange({ search: debouncedSearch });
     }
-  }, [debouncedSearch]);
+  }, [debouncedSearch, filters.search, handleFilterChange]);
 
   // Filter and sort recipes
   const filteredAndSortedRecipes = useMemo(() => {

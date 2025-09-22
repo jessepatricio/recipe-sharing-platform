@@ -10,6 +10,11 @@ import { headers } from "next/headers";
 // Demo mode restrictions
 const DEMO_MODE = process.env.NODE_ENV === 'production' && process.env.VERCEL === '1';
 
+// Type for global rate limit store
+interface GlobalRateLimitStore {
+  rateLimitStore?: Map<string, { count: number; resetTime: number }>;
+}
+
 // Rate limiting for demo mode
 async function checkRateLimit(action: string) {
   if (!DEMO_MODE) return { allowed: true };
@@ -27,13 +32,14 @@ async function checkRateLimit(action: string) {
   const maxRequests = 2; // Very restrictive for demo
   
   // This is a simplified version - in production, use Redis or similar
-  if (!global.rateLimitStore) {
-    global.rateLimitStore = new Map();
+  const globalStore = global as GlobalRateLimitStore;
+  if (!globalStore.rateLimitStore) {
+    globalStore.rateLimitStore = new Map();
   }
   
-  const current = global.rateLimitStore.get(key);
+  const current = globalStore.rateLimitStore.get(key);
   if (!current || current.resetTime < now) {
-    global.rateLimitStore.set(key, { count: 1, resetTime: now + windowMs });
+    globalStore.rateLimitStore.set(key, { count: 1, resetTime: now + windowMs });
     return { allowed: true, remaining: maxRequests - 1 };
   }
   
