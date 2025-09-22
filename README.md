@@ -17,10 +17,12 @@ A modern, full-stack recipe sharing application built with Next.js 15, React 19,
 - **Session Management** - Persistent login sessions
 
 ### 📝 Recipe Management
-- **Create Recipes** - Rich recipe creation with detailed forms
-- **Edit & Update** - Full CRUD operations for your recipes
+- **Create Recipes** - Rich recipe creation with detailed forms and image uploads
+- **Edit & Update** - Full CRUD operations with cancel functionality
 - **Delete Recipes** - Remove recipes you no longer want
-- **My Recipes Dashboard** - Personal recipe management
+- **My Recipes Dashboard** - Personal recipe management with image galleries
+- **Image Upload** - Upload multiple images per recipe with drag & drop
+- **Image Display** - Beautiful image galleries on all recipe pages
 
 ### 🔍 Advanced Search & Filtering
 - **Smart Search** - Search across titles, descriptions, ingredients, and instructions
@@ -44,6 +46,15 @@ A modern, full-stack recipe sharing application built with Next.js 15, React 19,
 - **Interactive Components** - Radix UI primitives
 - **Visual Feedback** - Clear indicators for active filters
 - **Loading States** - Smooth user experience
+- **Image Galleries** - Stunning recipe image displays
+- **Drag & Drop Upload** - Intuitive image upload interface
+
+### 👥 Social Features
+- **Like System** - Like and unlike recipes from other users
+- **Comments** - Leave comments on recipes
+- **Real-time Counters** - Live like and comment counts
+- **User Interactions** - Engage with the community
+- **Social Feed** - Discover recipes from other users
 
 ### 🏗️ Technical Features
 - **Server-Side Rendering** - Fast initial page loads
@@ -91,6 +102,8 @@ A modern, full-stack recipe sharing application built with Next.js 15, React 19,
    - Create a new Supabase project
    - Run the migration files in `supabase/migrations/`
    - Execute the seed data in `supabase/seed.sql`
+   - Create a storage bucket named `recipe-images` in Supabase Storage
+   - Set up storage policies for the `recipe-images` bucket (see Storage Setup below)
 
 5. **Start the development server**
    ```bash
@@ -101,7 +114,34 @@ A modern, full-stack recipe sharing application built with Next.js 15, React 19,
    pnpm dev
    ```
 
-6. **Open your browser**
+6. **Set up Supabase Storage**
+   - Go to your Supabase dashboard
+   - Navigate to Storage
+   - Create a new bucket named `recipe-images`
+   - Set the bucket to public
+   - Go to SQL Editor and run the storage policies:
+   ```sql
+   -- Storage policies for recipe-images bucket
+   CREATE POLICY "recipe_images_public_read" ON storage.objects
+   FOR SELECT USING (bucket_id = 'recipe-images');
+
+   CREATE POLICY "recipe_images_authenticated_insert" ON storage.objects
+   FOR INSERT WITH CHECK (
+     bucket_id = 'recipe-images' AND auth.role() = 'authenticated'
+   );
+
+   CREATE POLICY "recipe_images_authenticated_update" ON storage.objects
+   FOR UPDATE USING (
+     bucket_id = 'recipe-images' AND auth.role() = 'authenticated'
+   );
+
+   CREATE POLICY "recipe_images_authenticated_delete" ON storage.objects
+   FOR DELETE USING (
+     bucket_id = 'recipe-images' AND auth.role() = 'authenticated'
+   );
+   ```
+
+7. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 🗄️ Database Schema
@@ -117,6 +157,8 @@ A modern, full-stack recipe sharing application built with Next.js 15, React 19,
 - ingredients (TEXT[]) -- array of ingredients
 - instructions (TEXT[]) -- array of instructions
 - user_id (UUID, Foreign Key)
+- like_count (INTEGER) -- cached like count
+- comment_count (INTEGER) -- cached comment count
 - created_at (TIMESTAMP)
 - updated_at (TIMESTAMP)
 ```
@@ -128,6 +170,41 @@ A modern, full-stack recipe sharing application built with Next.js 15, React 19,
 - full_name (TEXT)
 - avatar_url (TEXT)
 - bio (TEXT)
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+```
+
+### Recipe Images Table
+```sql
+- id (UUID, Primary Key)
+- recipe_id (UUID, Foreign Key)
+- image_url (TEXT) -- Supabase Storage URL
+- alt_text (TEXT) -- accessibility text
+- caption (TEXT) -- optional image caption
+- is_primary (BOOLEAN) -- primary image flag
+- sort_order (INTEGER) -- display order
+- file_size (INTEGER) -- file size in bytes
+- mime_type (TEXT) -- image MIME type
+- width (INTEGER) -- image width
+- height (INTEGER) -- image height
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+```
+
+### Likes Table
+```sql
+- id (UUID, Primary Key)
+- recipe_id (UUID, Foreign Key)
+- user_id (UUID, Foreign Key)
+- created_at (TIMESTAMP)
+```
+
+### Comments Table
+```sql
+- id (UUID, Primary Key)
+- recipe_id (UUID, Foreign Key)
+- user_id (UUID, Foreign Key)
+- content (TEXT, NOT NULL)
 - created_at (TIMESTAMP)
 - updated_at (TIMESTAMP)
 ```
@@ -172,6 +249,9 @@ recipe-sharing-platform/
 - Ingredient and instruction arrays
 - Category selection
 - Difficulty and cook time input
+- **Image upload with drag & drop**
+- **Multiple images per recipe**
+- **Image preview and management**
 - Real-time preview
 
 ### Advanced Filtering
@@ -193,6 +273,30 @@ recipe-sharing-platform/
 - **Error Handling**: Graceful error management
 - **Accessibility**: WCAG compliant
 - **Performance**: Optimized queries and rendering
+- **Cancel Functionality**: Easy recipe editing with cancel button
+- **Smart Redirects**: Automatic navigation to My Recipes after saving
+- **Image Management**: Intuitive image upload and display
+
+## 🆕 Recent Updates
+
+### Image Upload System
+- **Drag & Drop Interface**: Easy image upload with visual feedback
+- **Multiple Images**: Upload up to 5 images per recipe
+- **Image Galleries**: Beautiful display on all recipe pages
+- **Primary Image**: Automatic primary image selection
+- **Storage Integration**: Secure Supabase Storage with RLS policies
+
+### Social Features
+- **Like System**: Like and unlike recipes with real-time counters
+- **Comments**: Leave and view comments on recipes
+- **User Engagement**: Interactive social features
+- **Real-time Updates**: Live like and comment counts
+
+### UI/UX Improvements
+- **Cancel Button**: Easy recipe editing with cancel functionality
+- **Smart Navigation**: Redirect to My Recipes after saving/updating
+- **Image Display**: Stunning image galleries across all pages
+- **Better Error Handling**: Improved error messages and validation
 
 ## 🚀 Deployment
 
