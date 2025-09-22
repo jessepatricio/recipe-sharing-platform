@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 // import { Button } from "@/components/recipes/ui/button"; // Unused
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/recipes/ui/card";
 import { Upload, X, Image as ImageIcon, Star } from "lucide-react";
@@ -151,11 +152,12 @@ export function ImageUpload({ onImagesChange, maxImages = 5, className = "" }: I
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {images.map((image, index) => (
                 <div key={image.id} className="relative group">
-                  <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
-                    <img
+                  <div className="aspect-video rounded-lg overflow-hidden bg-gray-100 relative">
+                    <Image
                       src={image.preview}
                       alt={`Preview ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   </div>
                   

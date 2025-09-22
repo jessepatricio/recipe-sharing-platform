@@ -8,6 +8,7 @@ import { LikeButton } from "../../../components/recipes/ui/like-button";
 import { CommentsSection } from "../../../components/recipes/ui/comments-section";
 import { Edit, Clock, ChefHat, User, Calendar, ArrowLeft, MessageCircle, Heart, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface RecipeViewProps {
   recipe: Recipe;
@@ -115,10 +116,11 @@ export function RecipeView({ recipe, currentUserId }: RecipeViewProps) {
             {recipe.images.map((image, index) => (
               <div key={image.id} className="relative group">
                 <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
-                  <img
+                  <Image
                     src={image.imageUrl}
                     alt={image.altText || `${recipe.title} - Image ${index + 1}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-200"
                   />
                 </div>
                 {image.isPrimary && (

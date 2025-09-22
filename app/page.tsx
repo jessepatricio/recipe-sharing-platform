@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { SiteHeader } from "../components/site-header";
 
 export default function Home() {
@@ -64,7 +65,7 @@ export default function Home() {
                 className="rounded-xl border border-black/10 dark:border-white/10 p-6 hover:shadow-sm transition text-center"
               >
                 <div className="flex items-center justify-center gap-3 mb-3">
-                  <img src={item.icon} alt="" width={20} height={20} aria-hidden />
+                  <Image src={item.icon} alt="" width={20} height={20} aria-hidden />
                   <h3 className="text-lg font-semibold">{item.title}</h3>
                 </div>
                 <p className="text-sm text-foreground/70">{item.desc}</p>

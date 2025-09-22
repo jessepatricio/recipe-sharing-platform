@@ -2,6 +2,7 @@ import { Recipe } from "../../lib/types";
 import { Button } from "./ui/button";
 import { Edit, Trash2, Eye, MessageCircle, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { deleteRecipe } from "../../app/actions/recipes";
 import { LikeButton } from "./ui/like-button";
@@ -45,10 +46,11 @@ export function RecipeCard({ recipe, showActions = false, onDelete, currentUserI
       <Link href={`/recipes/${recipe.id}`} className="block">
         <div className="relative h-48 w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
           {recipe.primaryImage ? (
-            <img
+            <Image
               src={recipe.primaryImage.imageUrl}
               alt={recipe.primaryImage.altText || recipe.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-200"
             />
           ) : (
             <div className="flex items-center justify-center h-full">
