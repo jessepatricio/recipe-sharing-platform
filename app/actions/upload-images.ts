@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "../../lib/supabase/server";
 import { getServerSession } from "../../lib/supabase/server";
 
 // Helper function to get image dimensions (simplified for server-side)
-async function getImageDimensions(_file: File): Promise<{ width: number; height: number }> {
+async function getImageDimensions(): Promise<{ width: number; height: number }> {
   // For server-side, we'll use default dimensions
   // In a production app, you might want to use a library like 'sharp' for image processing
   return { width: 800, height: 600 };
@@ -63,7 +63,7 @@ export async function uploadRecipeImages(recipeId: string, images: File[]): Prom
           imageUrls.push(urlData.publicUrl);
           
           // Save to database with alternative path
-          const dimensions = await getImageDimensions(imageFile);
+          const dimensions = await getImageDimensions();
           await supabase
             .from('recipe_images')
             .insert({
@@ -87,7 +87,7 @@ export async function uploadRecipeImages(recipeId: string, images: File[]): Prom
           console.log(`Image uploaded successfully: ${urlData.publicUrl}`);
 
           // Get image dimensions
-          const dimensions = await getImageDimensions(imageFile);
+          const dimensions = await getImageDimensions();
           
           // Save image metadata to database
           const { error: dbError } = await supabase
