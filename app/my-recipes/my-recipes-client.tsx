@@ -12,7 +12,7 @@ interface MyRecipesClientProps {
 
 export function MyRecipesClient({ recipes: initialRecipes, userId }: MyRecipesClientProps) {
   const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
 
   const handleRecipeDelete = async () => {
     setLoading(true);

@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "../../lib/supabase/server";
 import { getServerSession } from "../../lib/supabase/server";
 
 // Helper function to get image dimensions (simplified for server-side)
-async function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+async function getImageDimensions(_file: File): Promise<{ width: number; height: number }> {
   // For server-side, we'll use default dimensions
   // In a production app, you might want to use a library like 'sharp' for image processing
   return { width: 800, height: 600 };

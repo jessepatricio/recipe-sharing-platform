@@ -12,7 +12,7 @@ import { Label } from "./ui/label";
 import { Card } from "./ui/card";
 import { Pagination } from "./ui/pagination";
 import { useDebounce } from "./ui/use-debounce";
-import { ChevronDown, Filter, X, SortAsc, SortDesc, Clock, ChefHat, Tag, Search } from "lucide-react";
+import { ChevronDown, Filter, X, SortAsc, Clock, ChefHat, Tag, Search } from "lucide-react";
 
 interface RecipeListProps {
   recipes: Recipe[];
@@ -93,7 +93,7 @@ export function RecipeList({ recipes, itemsPerPage = 12, showActions = false, on
 
   // Filter and sort recipes
   const filteredAndSortedRecipes = useMemo(() => {
-    let filtered = recipes.filter(recipe => {
+    const filtered = recipes.filter(recipe => {
       // Search filter
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
@@ -373,7 +373,7 @@ export function RecipeList({ recipes, itemsPerPage = 12, showActions = false, on
             {filters.search && (
               <Badge variant="secondary" className="flex items-center gap-1 bg-blue-100 text-blue-800 hover:bg-blue-200">
                 <Search className="h-3 w-3" />
-                Search: "{filters.search}"
+                Search: &quot;{filters.search}&quot;
                 <button
                   onClick={() => handleFilterChange({ search: "" })}
                   className="ml-1 hover:text-red-600 transition-colors"

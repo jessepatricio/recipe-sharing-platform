@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { MessageCircle, Reply, Edit2, Trash2, MoreVertical } from 'lucide-react';
+import { Reply, Edit2, Trash2, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/recipes/ui/button';
 import { Card } from '@/components/recipes/ui/card';
 import { CommentForm } from './comment-form';
@@ -28,7 +28,7 @@ export function Comment({
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showActions, setShowActions] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [currentUser, setCurrentUser] = useState<string | null>(null);
 
   // Get current user to determine if they can edit/delete this comment

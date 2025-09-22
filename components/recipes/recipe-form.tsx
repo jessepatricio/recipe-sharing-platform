@@ -10,7 +10,7 @@ import { Textarea } from "@/components/recipes/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/recipes/ui/select";
 import { Label } from "@/components/recipes/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/recipes/ui/card";
-import { Plus, X, ChefHat, Tag } from "lucide-react";
+import { X, ChefHat, Tag } from "lucide-react";
 import { ImageUpload } from "./image-upload";
 
 interface RecipeFormProps {
@@ -42,7 +42,7 @@ export function RecipeForm({ initialData, isEditing = false, recipeId }: RecipeF
   const [images, setImages] = useState<File[]>([]);
 
   const [state, formAction] = useActionState(
-    async (prevState: any, formData: FormData) => {
+    async (prevState: { success: boolean; error?: string; recipeId?: string }, formData: FormData) => {
       setIsSubmitting(true);
       
       // Debug logging
@@ -57,7 +57,7 @@ export function RecipeForm({ initialData, isEditing = false, recipeId }: RecipeF
         
         // If recipe creation/update was successful and we have images, upload them
         if (result.success && images.length > 0) {
-          const recipeIdToUse = result.recipeId || recipeId;
+          const recipeIdToUse = (result as { success: boolean; error?: string; recipeId?: string }).recipeId || recipeId;
           if (recipeIdToUse) {
             console.log("Uploading images for recipe:", recipeIdToUse);
             const uploadResult = await uploadRecipeImages(recipeIdToUse, images);

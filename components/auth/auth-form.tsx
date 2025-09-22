@@ -35,9 +35,9 @@ export function AuthForm({ mode: initialMode = "sign-in" }: Props) {
           setMessage(result.error);
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus("error");
-      setMessage(err?.message || "Something went wrong");
+      setMessage(err instanceof Error ? err.message : "Something went wrong");
     }
   }
 

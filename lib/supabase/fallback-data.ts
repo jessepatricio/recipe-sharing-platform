@@ -14,6 +14,9 @@ export function getFallbackRecipes(): Recipe[] {
       category: "Welcome",
       ingredients: ["Sample ingredient 1", "Sample ingredient 2"],
       instructions: ["Step 1: Do something", "Step 2: Do something else"],
+      likeCount: 0,
+      commentCount: 0,
+      isLiked: false,
     },
     {
       id: "fallback-2",
@@ -27,6 +30,9 @@ export function getFallbackRecipes(): Recipe[] {
       category: "Setup",
       ingredients: ["Database setup", "Migration scripts"],
       instructions: ["Step 1: Set up Supabase", "Step 2: Run migrations"],
+      likeCount: 0,
+      commentCount: 0,
+      isLiked: false,
     },
   ];
 }

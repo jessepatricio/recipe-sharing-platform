@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { SiteHeader } from "../../components/site-header";
-import { RecipeList } from "../../components/recipes/recipe-list";
+// import { RecipeList } from "../../components/recipes/recipe-list"; // Unused
 import { getUserRecipesWithLikeStatus } from "../../lib/supabase/queries";
 import { getServerSession } from "../../lib/supabase/server";
 import { MyRecipesClient } from "./my-recipes-client";
@@ -37,7 +37,7 @@ export default async function MyRecipesPage() {
 
         {recipes.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-lg text-foreground/70 mb-4">You haven't created any recipes yet.</div>
+            <div className="text-lg text-foreground/70 mb-4">You haven&apos;t created any recipes yet.</div>
             <Link
               href="/recipes/create"
               className="inline-flex items-center justify-center rounded-md bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition"

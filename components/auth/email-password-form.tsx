@@ -38,9 +38,9 @@ export function EmailPasswordForm({ mode }: Props) {
       }
       // Optional: refresh to show session-based UI
       if (mode === "sign-in") window.location.assign("/");
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus("error");
-      setMessage(err?.message || "Something went wrong");
+      setMessage(err instanceof Error ? err.message : "Something went wrong");
     }
   }
 

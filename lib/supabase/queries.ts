@@ -1,6 +1,39 @@
 import { createSupabaseServerClient } from "./server";
 import { Recipe, RecipeImage } from "../types";
 
+// Database record interfaces
+interface DatabaseRecipeImage {
+  id: string;
+  recipe_id: string;
+  image_url: string;
+  alt_text: string | null;
+  caption: string | null;
+  is_primary: boolean;
+  sort_order: number;
+  file_size: number | null;
+  mime_type: string | null;
+  width: number | null;
+  height: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface DatabaseRecipe {
+  id: string;
+  title: string;
+  description: string | null;
+  cooking_time: number | null;
+  difficulty: string | null;
+  category: string | null;
+  ingredients: string[] | null;
+  instructions: string[] | null;
+  user_id: string;
+  like_count: number | null;
+  comment_count: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // Utility function to ensure consistent date handling
 function parseDate(dateString: string | null | undefined): Date {
   if (!dateString) return new Date();
@@ -27,7 +60,7 @@ async function fetchRecipeImages(recipeIds: string[]): Promise<Map<string, Recip
   // Group images by recipe_id
   const imageMap = new Map<string, RecipeImage[]>();
   if (images) {
-    images.forEach((image: any) => {
+    images.forEach((image: DatabaseRecipeImage) => {
       const recipeId = image.recipe_id;
       if (!imageMap.has(recipeId)) {
         imageMap.set(recipeId, []);
@@ -37,14 +70,14 @@ async function fetchRecipeImages(recipeIds: string[]): Promise<Map<string, Recip
         id: image.id,
         recipeId: image.recipe_id,
         imageUrl: image.image_url,
-        altText: image.alt_text,
-        caption: image.caption,
+        altText: image.alt_text || undefined,
+        caption: image.caption || undefined,
         isPrimary: image.is_primary,
         sortOrder: image.sort_order,
-        fileSize: image.file_size,
-        mimeType: image.mime_type,
-        width: image.width,
-        height: image.height,
+        fileSize: image.file_size || undefined,
+        mimeType: image.mime_type || undefined,
+        width: image.width || undefined,
+        height: image.height || undefined,
         createdAt: parseDate(image.created_at),
         updatedAt: parseDate(image.updated_at)
       };
@@ -131,7 +164,7 @@ export async function getRecipes(): Promise<Recipe[]> {
     // Fetch recipe images
     const imageMap = await fetchRecipeImages(allRecipeIds);
 
-    return recipesData.map((recipe: any) => {
+    return recipesData.map((recipe: DatabaseRecipe) => {
       const recipeImages = imageMap.get(recipe.id) || [];
       const primaryImage = recipeImages.find(img => img.isPrimary) || recipeImages[0];
       
@@ -142,7 +175,7 @@ export async function getRecipes(): Promise<Recipe[]> {
         author: profileMap.get(recipe.user_id) || "Anonymous",
         authorId: recipe.user_id || "",
         cookTime: recipe.cooking_time || 0, // INTEGER in minutes
-        difficulty: recipe.difficulty || null,
+        difficulty: recipe.difficulty || "Easy",
         createdAt: parseDate(recipe.created_at),
         category: recipe.category || "General",
         ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
@@ -229,7 +262,7 @@ export async function getUserRecipes(userId: string): Promise<Recipe[]> {
     // Fetch recipe images
     const imageMap = await fetchRecipeImages(allRecipeIds);
 
-    return recipesData.map((recipe: any) => {
+    return recipesData.map((recipe: DatabaseRecipe) => {
       const recipeImages = imageMap.get(recipe.id) || [];
       const primaryImage = recipeImages.find(img => img.isPrimary) || recipeImages[0];
       
@@ -240,7 +273,7 @@ export async function getUserRecipes(userId: string): Promise<Recipe[]> {
         author: profileData?.full_name || "Anonymous",
         authorId: recipe.user_id || "",
         cookTime: recipe.cooking_time || 0, // INTEGER in minutes
-        difficulty: recipe.difficulty || null,
+        difficulty: recipe.difficulty || "Easy",
         createdAt: parseDate(recipe.created_at),
         category: recipe.category || "General",
         ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
@@ -344,7 +377,7 @@ export async function getUserRecipesWithLikeStatus(userId: string): Promise<Reci
     // Fetch recipe images
     const imageMap = await fetchRecipeImages(allRecipeIds);
 
-    return recipesData.map((recipe: any) => {
+    return recipesData.map((recipe: DatabaseRecipe) => {
       const recipeImages = imageMap.get(recipe.id) || [];
       const primaryImage = recipeImages.find(img => img.isPrimary) || recipeImages[0];
       
@@ -355,7 +388,7 @@ export async function getUserRecipesWithLikeStatus(userId: string): Promise<Reci
         author: profileData?.full_name || "Anonymous",
         authorId: recipe.user_id || "",
         cookTime: recipe.cooking_time || 0,
-        difficulty: recipe.difficulty || null,
+        difficulty: recipe.difficulty || "Easy",
         createdAt: parseDate(recipe.created_at),
         category: recipe.category || "General",
         ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
@@ -552,7 +585,7 @@ export async function getRecipesWithLikeStatus(userId?: string): Promise<Recipe[
     // Fetch recipe images
     const imageMap = await fetchRecipeImages(allRecipeIds);
 
-    return recipesData.map((recipe: any) => {
+    return recipesData.map((recipe: DatabaseRecipe) => {
       const recipeImages = imageMap.get(recipe.id) || [];
       const primaryImage = recipeImages.find(img => img.isPrimary) || recipeImages[0];
       
@@ -563,7 +596,7 @@ export async function getRecipesWithLikeStatus(userId?: string): Promise<Recipe[
         author: profileMap.get(recipe.user_id) || "Anonymous",
         authorId: recipe.user_id || "",
         cookTime: recipe.cooking_time || 0,
-        difficulty: recipe.difficulty || null,
+        difficulty: recipe.difficulty || "Easy",
         createdAt: parseDate(recipe.created_at),
         category: recipe.category || "General",
         ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],

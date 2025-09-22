@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from './server';
-import { Comment, Like, CreateCommentData, LikeResponse, CommentResponse } from '@/lib/types';
+import { Comment, CreateCommentData, LikeResponse, CommentResponse } from '@/lib/types';
 
 // Like-related queries
 export async function toggleLike(recipeId: string, userId: string): Promise<LikeResponse> {
