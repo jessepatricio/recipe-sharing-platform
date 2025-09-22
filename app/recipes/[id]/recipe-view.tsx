@@ -6,7 +6,7 @@ import { Card } from "../../../components/recipes/ui/card";
 import { Badge } from "../../../components/recipes/ui/badge";
 import { LikeButton } from "../../../components/recipes/ui/like-button";
 import { CommentsSection } from "../../../components/recipes/ui/comments-section";
-import { Edit, Clock, ChefHat, User, Calendar, ArrowLeft, MessageCircle, Heart } from "lucide-react";
+import { Edit, Clock, ChefHat, User, Calendar, ArrowLeft, MessageCircle, Heart, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 
 interface RecipeViewProps {
@@ -103,6 +103,41 @@ export function RecipeView({ recipe, currentUserId }: RecipeViewProps) {
           </div>
         </div>
       </div>
+
+      {/* Recipe Images */}
+      {recipe.images && recipe.images.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-semibold flex items-center gap-2">
+            <ImageIcon className="h-6 w-6" />
+            Recipe Images
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recipe.images.map((image, index) => (
+              <div key={image.id} className="relative group">
+                <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
+                  <img
+                    src={image.imageUrl}
+                    alt={image.altText || `${recipe.title} - Image ${index + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  />
+                </div>
+                {image.isPrimary && (
+                  <div className="absolute top-2 left-2">
+                    <Badge variant="default" className="text-xs">
+                      Primary
+                    </Badge>
+                  </div>
+                )}
+                {image.caption && (
+                  <p className="mt-2 text-sm text-foreground/70 text-center">
+                    {image.caption}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Recipe Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

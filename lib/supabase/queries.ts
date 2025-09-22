@@ -1,11 +1,59 @@
 import { createSupabaseServerClient } from "./server";
-import { Recipe } from "../types";
+import { Recipe, RecipeImage } from "../types";
 
 // Utility function to ensure consistent date handling
 function parseDate(dateString: string | null | undefined): Date {
   if (!dateString) return new Date();
   const date = new Date(dateString);
   return isNaN(date.getTime()) ? new Date() : date;
+}
+
+// Helper function to fetch recipe images
+async function fetchRecipeImages(recipeIds: string[]): Promise<Map<string, RecipeImage[]>> {
+  if (recipeIds.length === 0) return new Map();
+  
+  const supabase = await createSupabaseServerClient();
+  const { data: images, error } = await supabase
+    .from('recipe_images')
+    .select('*')
+    .in('recipe_id', recipeIds)
+    .order('sort_order', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching recipe images:', error);
+    return new Map();
+  }
+
+  // Group images by recipe_id
+  const imageMap = new Map<string, RecipeImage[]>();
+  if (images) {
+    images.forEach((image: any) => {
+      const recipeId = image.recipe_id;
+      if (!imageMap.has(recipeId)) {
+        imageMap.set(recipeId, []);
+      }
+      
+      const recipeImage: RecipeImage = {
+        id: image.id,
+        recipeId: image.recipe_id,
+        imageUrl: image.image_url,
+        altText: image.alt_text,
+        caption: image.caption,
+        isPrimary: image.is_primary,
+        sortOrder: image.sort_order,
+        fileSize: image.file_size,
+        mimeType: image.mime_type,
+        width: image.width,
+        height: image.height,
+        createdAt: parseDate(image.created_at),
+        updatedAt: parseDate(image.updated_at)
+      };
+      
+      imageMap.get(recipeId)!.push(recipeImage);
+    });
+  }
+
+  return imageMap;
 }
 
 export async function getRecipes(): Promise<Recipe[]> {
@@ -51,22 +99,61 @@ export async function getRecipes(): Promise<Recipe[]> {
       });
     }
 
-    return recipesData.map((recipe: any) => ({
-      id: recipe.id,
-      title: recipe.title || "Untitled Recipe",
-      description: recipe.description || "",
-      author: profileMap.get(recipe.user_id) || "Anonymous",
-      authorId: recipe.user_id || "",
-      cookTime: recipe.cooking_time || 0, // INTEGER in minutes
-      difficulty: recipe.difficulty || null,
-      createdAt: parseDate(recipe.created_at),
-      category: recipe.category || "General",
-      ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
-      instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
-      likeCount: recipe.like_count || 0,
-      commentCount: recipe.comment_count || 0,
-      isLiked: false, // Will be set by client-side logic
-    }));
+    // Get actual like counts and comment counts for all recipes to ensure accuracy
+    const allRecipeIds = recipesData.map(recipe => recipe.id);
+    const { data: allLikes, error: allLikesError } = await supabase
+      .from('likes')
+      .select('recipe_id')
+      .in('recipe_id', allRecipeIds);
+
+    const { data: allComments, error: allCommentsError } = await supabase
+      .from('comments')
+      .select('recipe_id')
+      .in('recipe_id', allRecipeIds);
+
+    // Create maps of recipe_id to actual counts
+    const likeCountMap = new Map();
+    if (!allLikesError && allLikes) {
+      allLikes.forEach(like => {
+        const currentCount = likeCountMap.get(like.recipe_id) || 0;
+        likeCountMap.set(like.recipe_id, currentCount + 1);
+      });
+    }
+
+    const commentCountMap = new Map();
+    if (!allCommentsError && allComments) {
+      allComments.forEach(comment => {
+        const currentCount = commentCountMap.get(comment.recipe_id) || 0;
+        commentCountMap.set(comment.recipe_id, currentCount + 1);
+      });
+    }
+
+    // Fetch recipe images
+    const imageMap = await fetchRecipeImages(allRecipeIds);
+
+    return recipesData.map((recipe: any) => {
+      const recipeImages = imageMap.get(recipe.id) || [];
+      const primaryImage = recipeImages.find(img => img.isPrimary) || recipeImages[0];
+      
+      return {
+        id: recipe.id,
+        title: recipe.title || "Untitled Recipe",
+        description: recipe.description || "",
+        author: profileMap.get(recipe.user_id) || "Anonymous",
+        authorId: recipe.user_id || "",
+        cookTime: recipe.cooking_time || 0, // INTEGER in minutes
+        difficulty: recipe.difficulty || null,
+        createdAt: parseDate(recipe.created_at),
+        category: recipe.category || "General",
+        ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+        instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
+        likeCount: likeCountMap.get(recipe.id) || 0, // Use actual count instead of stored count
+        commentCount: commentCountMap.get(recipe.id) || 0, // Use actual count instead of stored count
+        isLiked: false, // Will be set by client-side logic
+        images: recipeImages,
+        primaryImage: primaryImage
+      };
+    });
   } catch (err) {
     console.error("Error fetching recipes:", err);
     return [];
@@ -110,22 +197,61 @@ export async function getUserRecipes(userId: string): Promise<Recipe[]> {
       // Continue without profile - just use Anonymous
     }
 
-    return recipesData.map((recipe: any) => ({
-      id: recipe.id,
-      title: recipe.title || "Untitled Recipe",
-      description: recipe.description || "",
-      author: profileData?.full_name || "Anonymous",
-      authorId: recipe.user_id || "",
-      cookTime: recipe.cooking_time || 0, // INTEGER in minutes
-      difficulty: recipe.difficulty || null,
-      createdAt: parseDate(recipe.created_at),
-      category: recipe.category || "General",
-      ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
-      instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
-      likeCount: recipe.like_count || 0,
-      commentCount: recipe.comment_count || 0,
-      isLiked: false, // Will be set by client-side logic
-    }));
+    // Get actual like counts and comment counts for all recipes to ensure accuracy
+    const allRecipeIds = recipesData.map(recipe => recipe.id);
+    const { data: allLikes, error: allLikesError } = await supabase
+      .from('likes')
+      .select('recipe_id')
+      .in('recipe_id', allRecipeIds);
+
+    const { data: allComments, error: allCommentsError } = await supabase
+      .from('comments')
+      .select('recipe_id')
+      .in('recipe_id', allRecipeIds);
+
+    // Create maps of recipe_id to actual counts
+    const likeCountMap = new Map();
+    if (!allLikesError && allLikes) {
+      allLikes.forEach(like => {
+        const currentCount = likeCountMap.get(like.recipe_id) || 0;
+        likeCountMap.set(like.recipe_id, currentCount + 1);
+      });
+    }
+
+    const commentCountMap = new Map();
+    if (!allCommentsError && allComments) {
+      allComments.forEach(comment => {
+        const currentCount = commentCountMap.get(comment.recipe_id) || 0;
+        commentCountMap.set(comment.recipe_id, currentCount + 1);
+      });
+    }
+
+    // Fetch recipe images
+    const imageMap = await fetchRecipeImages(allRecipeIds);
+
+    return recipesData.map((recipe: any) => {
+      const recipeImages = imageMap.get(recipe.id) || [];
+      const primaryImage = recipeImages.find(img => img.isPrimary) || recipeImages[0];
+      
+      return {
+        id: recipe.id,
+        title: recipe.title || "Untitled Recipe",
+        description: recipe.description || "",
+        author: profileData?.full_name || "Anonymous",
+        authorId: recipe.user_id || "",
+        cookTime: recipe.cooking_time || 0, // INTEGER in minutes
+        difficulty: recipe.difficulty || null,
+        createdAt: parseDate(recipe.created_at),
+        category: recipe.category || "General",
+        ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+        instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
+        likeCount: likeCountMap.get(recipe.id) || 0, // Use actual count instead of stored count
+        commentCount: commentCountMap.get(recipe.id) || 0, // Use actual count instead of stored count
+        isLiked: false, // Will be set by client-side logic
+        images: recipeImages,
+        primaryImage: primaryImage
+      };
+    });
   } catch (err) {
     console.error("Error fetching user recipes:", err);
     return [];
@@ -186,22 +312,61 @@ export async function getUserRecipesWithLikeStatus(userId: string): Promise<Reci
       likesData.forEach(like => likedRecipeIds.add(like.recipe_id));
     }
 
-    return recipesData.map((recipe: any) => ({
-      id: recipe.id,
-      title: recipe.title || "Untitled Recipe",
-      description: recipe.description || "",
-      author: profileData?.full_name || "Anonymous",
-      authorId: recipe.user_id || "",
-      cookTime: recipe.cooking_time || 0,
-      difficulty: recipe.difficulty || null,
-      createdAt: parseDate(recipe.created_at),
-      category: recipe.category || "General",
-      ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
-      instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
-      likeCount: recipe.like_count || 0,
-      commentCount: recipe.comment_count || 0,
-      isLiked: likedRecipeIds.has(recipe.id),
-    }));
+    // Get actual like counts and comment counts for all recipes to ensure accuracy
+    const allRecipeIds = recipesData.map(recipe => recipe.id);
+    const { data: allLikes, error: allLikesError } = await supabase
+      .from('likes')
+      .select('recipe_id')
+      .in('recipe_id', allRecipeIds);
+
+    const { data: allComments, error: allCommentsError } = await supabase
+      .from('comments')
+      .select('recipe_id')
+      .in('recipe_id', allRecipeIds);
+
+    // Create maps of recipe_id to actual counts
+    const likeCountMap = new Map();
+    if (!allLikesError && allLikes) {
+      allLikes.forEach(like => {
+        const currentCount = likeCountMap.get(like.recipe_id) || 0;
+        likeCountMap.set(like.recipe_id, currentCount + 1);
+      });
+    }
+
+    const commentCountMap = new Map();
+    if (!allCommentsError && allComments) {
+      allComments.forEach(comment => {
+        const currentCount = commentCountMap.get(comment.recipe_id) || 0;
+        commentCountMap.set(comment.recipe_id, currentCount + 1);
+      });
+    }
+
+    // Fetch recipe images
+    const imageMap = await fetchRecipeImages(allRecipeIds);
+
+    return recipesData.map((recipe: any) => {
+      const recipeImages = imageMap.get(recipe.id) || [];
+      const primaryImage = recipeImages.find(img => img.isPrimary) || recipeImages[0];
+      
+      return {
+        id: recipe.id,
+        title: recipe.title || "Untitled Recipe",
+        description: recipe.description || "",
+        author: profileData?.full_name || "Anonymous",
+        authorId: recipe.user_id || "",
+        cookTime: recipe.cooking_time || 0,
+        difficulty: recipe.difficulty || null,
+        createdAt: parseDate(recipe.created_at),
+        category: recipe.category || "General",
+        ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+        instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
+        likeCount: likeCountMap.get(recipe.id) || 0, // Use actual count instead of stored count
+        commentCount: commentCountMap.get(recipe.id) || 0, // Use actual count instead of stored count
+        isLiked: likedRecipeIds.has(recipe.id),
+        images: recipeImages,
+        primaryImage: primaryImage
+      };
+    });
   } catch (err) {
     console.error("Error fetching user recipes with like status:", err);
     return [];
@@ -260,6 +425,25 @@ export async function getRecipeById(id: string, userId?: string): Promise<Recipe
       }
     }
 
+    // Get actual like count and comment count for this recipe to ensure accuracy
+    const { data: likes, error: likesError } = await supabase
+      .from('likes')
+      .select('id')
+      .eq('recipe_id', id);
+
+    const { data: comments, error: commentsError } = await supabase
+      .from('comments')
+      .select('id')
+      .eq('recipe_id', id);
+
+    const actualLikeCount = (!likesError && likes) ? likes.length : 0;
+    const actualCommentCount = (!commentsError && comments) ? comments.length : 0;
+
+    // Fetch recipe images
+    const imageMap = await fetchRecipeImages([id]);
+    const recipeImages = imageMap.get(id) || [];
+    const primaryImage = recipeImages.find(img => img.isPrimary) || recipeImages[0];
+
     return {
       id: recipeData.id,
       title: recipeData.title || "Untitled Recipe",
@@ -272,9 +456,11 @@ export async function getRecipeById(id: string, userId?: string): Promise<Recipe
       category: recipeData.category || "General",
       ingredients: Array.isArray(recipeData.ingredients) ? recipeData.ingredients : [],
       instructions: Array.isArray(recipeData.instructions) ? recipeData.instructions : [],
-      likeCount: recipeData.like_count || 0,
-      commentCount: recipeData.comment_count || 0,
+      likeCount: actualLikeCount, // Use actual count instead of stored count
+      commentCount: actualCommentCount, // Use actual count instead of stored count
       isLiked: isLiked,
+      images: recipeImages,
+      primaryImage: primaryImage
     };
   } catch (err) {
     console.error("Error fetching recipe:", err);
@@ -334,22 +520,61 @@ export async function getRecipesWithLikeStatus(userId?: string): Promise<Recipe[
       }
     }
 
-    return recipesData.map((recipe: any) => ({
-      id: recipe.id,
-      title: recipe.title || "Untitled Recipe",
-      description: recipe.description || "",
-      author: profileMap.get(recipe.user_id) || "Anonymous",
-      authorId: recipe.user_id || "",
-      cookTime: recipe.cooking_time || 0,
-      difficulty: recipe.difficulty || null,
-      createdAt: parseDate(recipe.created_at),
-      category: recipe.category || "General",
-      ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
-      instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
-      likeCount: recipe.like_count || 0,
-      commentCount: recipe.comment_count || 0,
-      isLiked: userLikes.has(recipe.id),
-    }));
+    // Get actual like counts and comment counts for all recipes to ensure accuracy
+    const allRecipeIds = recipesData.map(recipe => recipe.id);
+    const { data: allLikes, error: allLikesError } = await supabase
+      .from('likes')
+      .select('recipe_id')
+      .in('recipe_id', allRecipeIds);
+
+    const { data: allComments, error: allCommentsError } = await supabase
+      .from('comments')
+      .select('recipe_id')
+      .in('recipe_id', allRecipeIds);
+
+    // Create maps of recipe_id to actual counts
+    const likeCountMap = new Map();
+    if (!allLikesError && allLikes) {
+      allLikes.forEach(like => {
+        const currentCount = likeCountMap.get(like.recipe_id) || 0;
+        likeCountMap.set(like.recipe_id, currentCount + 1);
+      });
+    }
+
+    const commentCountMap = new Map();
+    if (!allCommentsError && allComments) {
+      allComments.forEach(comment => {
+        const currentCount = commentCountMap.get(comment.recipe_id) || 0;
+        commentCountMap.set(comment.recipe_id, currentCount + 1);
+      });
+    }
+
+    // Fetch recipe images
+    const imageMap = await fetchRecipeImages(allRecipeIds);
+
+    return recipesData.map((recipe: any) => {
+      const recipeImages = imageMap.get(recipe.id) || [];
+      const primaryImage = recipeImages.find(img => img.isPrimary) || recipeImages[0];
+      
+      return {
+        id: recipe.id,
+        title: recipe.title || "Untitled Recipe",
+        description: recipe.description || "",
+        author: profileMap.get(recipe.user_id) || "Anonymous",
+        authorId: recipe.user_id || "",
+        cookTime: recipe.cooking_time || 0,
+        difficulty: recipe.difficulty || null,
+        createdAt: parseDate(recipe.created_at),
+        category: recipe.category || "General",
+        ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+        instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
+        likeCount: likeCountMap.get(recipe.id) || 0, // Use actual count instead of stored count
+        commentCount: commentCountMap.get(recipe.id) || 0, // Use actual count instead of stored count
+        isLiked: userLikes.has(recipe.id),
+        images: recipeImages,
+        primaryImage: primaryImage
+      };
+    });
   } catch (err) {
     console.error("Error fetching recipes with like status:", err);
     return [];
@@ -403,6 +628,25 @@ export async function getRecipeWithLikeStatus(id: string, userId?: string): Prom
       }
     }
 
+    // Get actual like count and comment count for this recipe to ensure accuracy
+    const { data: likes, error: likesError } = await supabase
+      .from('likes')
+      .select('id')
+      .eq('recipe_id', id);
+
+    const { data: comments, error: commentsError } = await supabase
+      .from('comments')
+      .select('id')
+      .eq('recipe_id', id);
+
+    const actualLikeCount = (!likesError && likes) ? likes.length : 0;
+    const actualCommentCount = (!commentsError && comments) ? comments.length : 0;
+
+    // Fetch recipe images
+    const imageMap = await fetchRecipeImages([id]);
+    const recipeImages = imageMap.get(id) || [];
+    const primaryImage = recipeImages.find(img => img.isPrimary) || recipeImages[0];
+
     return {
       id: recipeData.id,
       title: recipeData.title || "Untitled Recipe",
@@ -415,9 +659,11 @@ export async function getRecipeWithLikeStatus(id: string, userId?: string): Prom
       category: recipeData.category || "General",
       ingredients: Array.isArray(recipeData.ingredients) ? recipeData.ingredients : [],
       instructions: Array.isArray(recipeData.instructions) ? recipeData.instructions : [],
-      likeCount: recipeData.like_count || 0,
-      commentCount: recipeData.comment_count || 0,
+      likeCount: actualLikeCount, // Use actual count instead of stored count
+      commentCount: actualCommentCount, // Use actual count instead of stored count
       isLiked,
+      images: recipeImages,
+      primaryImage: primaryImage
     };
   } catch (err) {
     console.error("Error fetching recipe with like status:", err);

@@ -1,3 +1,20 @@
+// Recipe image interface
+export interface RecipeImage {
+  id: string;
+  recipeId: string;
+  imageUrl: string;
+  altText?: string;
+  caption?: string;
+  isPrimary: boolean;
+  sortOrder: number;
+  fileSize?: number;
+  mimeType?: string;
+  width?: number;
+  height?: number;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
 // Recipe interface matching the ERD schema
 export interface Recipe {
   id: string;
@@ -14,6 +31,8 @@ export interface Recipe {
   likeCount: number; // Maps to like_count
   commentCount: number; // Maps to comment_count
   isLiked?: boolean; // Whether current user has liked this recipe
+  images?: RecipeImage[]; // Recipe images
+  primaryImage?: RecipeImage; // Primary recipe image
 }
 
 // Note: Using simple string arrays for ingredients and instructions

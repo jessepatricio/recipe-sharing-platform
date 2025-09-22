@@ -2,7 +2,6 @@
 
 import { useState, useActionState } from "react";
 import { createRecipe, updateRecipe } from "../../app/actions/recipes";
-import { uploadRecipeImages } from "../../app/actions/upload-images";
 import { CreateRecipeData } from "../../lib/types";
 import { Button } from "@/components/recipes/ui/button";
 import { Input } from "@/components/recipes/ui/input";
@@ -19,20 +18,16 @@ interface RecipeFormProps {
   recipeId?: string;
 }
 
-export function RecipeForm({ initialData, isEditing = false, recipeId }: RecipeFormProps) {
+export function RecipeFormWithImages({ initialData, isEditing = false, recipeId }: RecipeFormProps) {
   const [title, setTitle] = useState<string>(initialData?.title || "");
   const [description, setDescription] = useState<string>(initialData?.description || "");
   const [cookTime, setCookTime] = useState<number>(initialData?.cookTime || 0);
   const [category, setCategory] = useState<string>(initialData?.category || "");
-  // Initialize difficulty state - check if it's a predefined value or custom
-  const initialDifficulty = initialData?.difficulty || "";
-  const isCustomDifficulty = initialDifficulty && !["Easy", "Medium", "Hard"].includes(initialDifficulty);
-  
-  const [difficulty, setDifficulty] = useState<string>(
-    isCustomDifficulty ? "Custom" : initialDifficulty
-  );
+  const [difficulty, setDifficulty] = useState<string>(initialData?.difficulty || "");
   const [customDifficulty, setCustomDifficulty] = useState<string>(
-    isCustomDifficulty ? initialDifficulty : ""
+    initialData?.difficulty && !["Easy", "Medium", "Hard"].includes(initialData.difficulty) 
+      ? initialData.difficulty 
+      : ""
   );
   const [ingredients, setIngredients] = useState<string[]>(initialData?.ingredients || []);
   const [instructions, setInstructions] = useState<string[]>(initialData?.instructions || []);
@@ -45,35 +40,16 @@ export function RecipeForm({ initialData, isEditing = false, recipeId }: RecipeF
     async (prevState: any, formData: FormData) => {
       setIsSubmitting(true);
       
-      // Debug logging
-      console.log("Submitting form with difficulty:", difficulty);
-      console.log("Images to upload:", images.length);
-      
       try {
-        // Create recipe first (without images)
+        // Add images to form data
+        images.forEach((image, index) => {
+          formData.append(`image_${index}`, image);
+        });
+        formData.append('image_count', images.length.toString());
+        
         const result = isEditing && recipeId 
           ? await updateRecipe(recipeId, formData)
           : await createRecipe(formData);
-        
-        // If recipe creation/update was successful and we have images, upload them
-        if (result.success && images.length > 0) {
-          const recipeIdToUse = result.recipeId || recipeId;
-          if (recipeIdToUse) {
-            console.log("Uploading images for recipe:", recipeIdToUse);
-            const uploadResult = await uploadRecipeImages(recipeIdToUse, images);
-            if (!uploadResult.success) {
-              console.error("Image upload failed:", uploadResult.error);
-              return { ...result, error: `Recipe saved but image upload failed: ${uploadResult.error}` };
-            }
-            console.log("Images uploaded successfully:", uploadResult.imageUrls);
-          }
-        }
-        
-        // If successful, redirect to My Recipes page
-        if (result.success) {
-          window.location.href = '/my-recipes';
-        }
-        
         return result;
       } finally {
         setIsSubmitting(false);
@@ -81,8 +57,6 @@ export function RecipeForm({ initialData, isEditing = false, recipeId }: RecipeF
     },
     { success: false, error: "" }
   );
-
-
 
   const addIngredient = () => {
     if (newIngredient.trim() && !ingredients.includes(newIngredient.trim())) {
@@ -109,7 +83,6 @@ export function RecipeForm({ initialData, isEditing = false, recipeId }: RecipeF
   const handleImagesChange = (newImages: File[]) => {
     setImages(newImages);
   };
-
 
   if (state.success && !state.error) {
     return (
@@ -177,9 +150,7 @@ export function RecipeForm({ initialData, isEditing = false, recipeId }: RecipeF
                 required
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="difficulty">Difficulty (Optional)</Label>
               <Select value={difficulty} onValueChange={setDifficulty}>
@@ -208,7 +179,6 @@ export function RecipeForm({ initialData, isEditing = false, recipeId }: RecipeF
               />
             </div>
           </div>
-
         </CardContent>
       </Card>
 
@@ -319,8 +289,7 @@ export function RecipeForm({ initialData, isEditing = false, recipeId }: RecipeF
         </CardContent>
       </Card>
 
-
-      {/* Hidden inputs for form data - using controlled inputs instead */}
+      {/* Hidden inputs for form data */}
       <input type="hidden" name="ingredients" value={JSON.stringify(ingredients)} />
       <input type="hidden" name="instructions" value={JSON.stringify(instructions)} />
 
@@ -331,19 +300,8 @@ export function RecipeForm({ initialData, isEditing = false, recipeId }: RecipeF
         </div>
       )}
 
-      {/* Submit and Cancel Buttons */}
-      <div className="flex justify-end gap-4">
-        {isEditing && (
-          <Button 
-            type="button" 
-            variant="outline"
-            size="lg"
-            onClick={() => window.history.back()}
-            className="px-8 py-3 rounded-lg font-semibold"
-          >
-            Cancel
-          </Button>
-        )}
+      {/* Submit Button */}
+      <div className="flex justify-end">
         <Button 
           type="submit" 
           size="lg"

@@ -4,6 +4,82 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getServerSession } from "../../lib/supabase/server";
 import { createSupabaseServerClient } from "../../lib/supabase/server";
+import { RecipeImage } from "../../lib/types";
+
+// Helper function to get image dimensions (simplified for server-side)
+async function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  // For server-side, we'll use default dimensions
+  // In a production app, you might want to use a library like 'sharp' for image processing
+  return { width: 800, height: 600 };
+}
+
+// Helper function to upload recipe images
+async function uploadRecipeImages(recipeId: string, formData: FormData, userId: string): Promise<void> {
+  const supabase = await createSupabaseServerClient();
+  const imageCount = parseInt(formData.get('image_count') as string) || 0;
+  
+  if (imageCount === 0) return;
+
+  console.log(`Uploading ${imageCount} images for recipe ${recipeId}`);
+
+  for (let i = 0; i < imageCount; i++) {
+    const imageFile = formData.get(`image_${i}`) as File;
+    if (!imageFile) continue;
+
+    try {
+      // Upload to Supabase Storage
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${recipeId}/${Date.now()}-${i}.${fileExt}`;
+      
+      console.log(`Uploading image ${i + 1}: ${fileName}`);
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('recipe-images')
+        .upload(fileName, imageFile);
+      
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        console.log('This might be because the storage bucket does not exist yet.');
+        console.log('Please create the "recipe-images" bucket in your Supabase dashboard.');
+        continue;
+      }
+
+      // Get the public URL for the uploaded image
+      const { data: urlData } = supabase.storage
+        .from('recipe-images')
+        .getPublicUrl(uploadData.path);
+      
+      const publicUrl = urlData.publicUrl;
+      console.log(`Image uploaded successfully: ${publicUrl}`);
+
+      // Get image dimensions
+      const dimensions = await getImageDimensions(imageFile);
+      
+      // Save image metadata to database
+      const { error: dbError } = await supabase
+        .from('recipe_images')
+        .insert({
+          recipe_id: recipeId,
+          image_url: publicUrl, // Use the full public URL
+          alt_text: imageFile.name,
+          file_size: imageFile.size,
+          mime_type: imageFile.type,
+          width: dimensions.width,
+          height: dimensions.height,
+          is_primary: i === 0, // First image is primary
+          sort_order: i
+        });
+      
+      if (dbError) {
+        console.error('Database error:', dbError);
+      } else {
+        console.log(`Image metadata saved to database`);
+      }
+    } catch (error) {
+      console.error('Error processing image:', error);
+    }
+  }
+}
 
 export async function createRecipe(formData: FormData) {
   const session = await getServerSession();
@@ -93,8 +169,11 @@ export async function createRecipe(formData: FormData) {
       };
     }
 
+        // Note: Image uploads are now handled separately in the form component
+
     revalidatePath("/dashboard");
     revalidatePath("/recipes");
+    revalidatePath("/my-recipes");
     
     return {
       success: true,
@@ -217,6 +296,7 @@ export async function updateRecipe(recipeId: string, formData: FormData) {
 
     revalidatePath("/dashboard");
     revalidatePath("/recipes");
+    revalidatePath("/my-recipes");
     revalidatePath(`/recipes/${recipeId}`);
     
     return {
@@ -326,6 +406,7 @@ export async function deleteRecipe(recipeId: string) {
 
     revalidatePath("/dashboard");
     revalidatePath("/recipes");
+    revalidatePath("/my-recipes");
     
     return {
       success: true

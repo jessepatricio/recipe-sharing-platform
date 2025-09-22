@@ -35,7 +35,7 @@ export async function updateProfile(formData: FormData) {
     await updateUserProfile(session.user.id, {
       username: username.trim(),
       full_name: full_name.trim(),
-      bio: bio?.trim() || null
+      bio: bio?.trim() || undefined
     });
 
     revalidatePath("/profile");
